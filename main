@@ -12,6 +12,7 @@ with open("config.json") as config_json:
     dtv_task_id = config["validator_task"]["_id"]
     follow_task_id = config["validator_task"]["follow_task_id"]
     instance_id = config["validator_task"]["instance_id"]
+    output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
 
     #print(instance_id)
     #print(dtv_task_id)
@@ -21,21 +22,23 @@ with open("config.json") as config_json:
         dest = os.environ["SECONDARY_ARCHIVE"]
     else:
         dest = "/tmp"
-    
-    dest+="/"+instance_id+"/"+follow_task_id
+
+    dest+="/"+instance_id+"/"+follow_task_id+"/"+output_id
+
+    print("src:%s dest:%s" % (src, dest))
     
     if not os.path.exists(src):
         print(src+" doesn't exist")
         sys.exit(1)
+
+    os.makedirs(dest, exist_ok=True)
 
     #too scary..
     #if os.path.exists(dest):
     #    print(dest+" already exists - removing first")
     #    shutil.rmtree(dest) 
 
-    shutil.copytree(src, dest) 
+    shutil.move(src, dest) 
 
-    #print(src)
-    #print(dest)
 
 
