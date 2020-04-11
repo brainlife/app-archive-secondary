@@ -11,6 +11,7 @@ with open("config.json") as config_json:
 
     dtv_task_id = config["validator_task"]["_id"]
     follow_task_id = config["validator_task"]["follow_task_id"]
+    group_id = str(config["validator_task"]["_group_id"])
     instance_id = config["validator_task"]["instance_id"]
     output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
 
@@ -23,7 +24,7 @@ with open("config.json") as config_json:
     else:
         dest = "/tmp"
 
-    dest+="/"+instance_id+"/"+follow_task_id+"/"+output_id
+    dest+="/"+group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id
 
     print("src:%s dest:%s" % (src, dest))
     
