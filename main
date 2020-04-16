@@ -7,40 +7,50 @@ import sys
 
 with open("config.json") as config_json:
     config = json.load(config_json)
-    #print(config)
 
-    dtv_task_id = config["validator_task"]["_id"]
-    #follow_task_id = config["validator_task"]["follow_task_id"]
-    follow_task_id = config["validator_task"]["deps_config"][0]["task"]
-    group_id = str(config["validator_task"]["_group_id"])
-    instance_id = config["validator_task"]["instance_id"]
-    output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
+dtv_task_id = config["validator_task"]["_id"]
+follow_task_id = config["validator_task"]["deps_config"][0]["task"]
+group_id = str(config["validator_task"]["_group_id"])
+instance_id = config["validator_task"]["instance_id"]
+output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
 
-    #print(instance_id)
-    #print(dtv_task_id)
+src = "../"+dtv_task_id+"/secondary"
+if "SECONDARY_ARCHIVE" in os.environ:
+    dest = os.environ["SECONDARY_ARCHIVE"]
+else:
+    dest = "/tmp"
 
-    src = "../"+dtv_task_id+"/secondary"
-    if "SECONDARY_ARCHIVE" in os.environ:
-        dest = os.environ["SECONDARY_ARCHIVE"]
+dest+="/"+group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id
+
+if not os.path.exists(src):
+    print(src+" doesn't exist")
+    sys.exit(1)
+
+os.makedirs(dest, exist_ok=True)
+
+def recursive_overwrite(src, dest, ignore=None):
+    if os.path.isdir(src):
+        if not os.path.isdir(dest):
+            os.makedirs(dest)
+        files = os.listdir(src)
+        if ignore is not None:
+            ignored = ignore(src, files)
+        else:
+            ignored = set()
+        for f in files:
+            if f not in ignored:
+                recursive_overwrite(os.path.join(src, f),
+                                    os.path.join(dest, f),
+                                    ignore)
     else:
-        dest = "/tmp"
+        shutil.copyfile(src, dest)
 
-    dest+="/"+group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id
-
-    print("src:%s dest:%s" % (src, dest))
-    
-    if not os.path.exists(src):
-        print(src+" doesn't exist")
-        sys.exit(1)
-
-    os.makedirs(dest, exist_ok=True)
-
-    #too scary..
-    #if os.path.exists(dest):
-    #    print(dest+" already exists - removing first")
-    #    shutil.rmtree(dest) 
-
-    shutil.move(src, dest) 
-
+#if os.path.exists(dest):
+#    print(dest+" already exists - removing first")
+#    shutil.rmtree(dest) 
+#
+print("src:%s dest:%s" % (src, dest))
+#shutil.copytree(src, dest+"/secondary")
+recursive_overwrite(src, dest+"/secondary")
 
 
