@@ -64,9 +64,9 @@ if "requests" in config:
         dest += "/"+request["task_id"]
         dest += "/"+request["subdir"]
 
-        if "path" in request:
-            src += "/"+request["path"]
-            dest += "/"+request["path"]
+        #if "path" in request:
+        #    src += "/"+request["path"]
+        #    dest += "/"+request["path"]
 
         handle_request(src, dest)
 
