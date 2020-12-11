@@ -8,25 +8,21 @@ import sys
 with open("config.json") as config_json:
     config = json.load(config_json)
 
-dtv_task_id = config["validator_task"]["_id"]
-follow_task_id = config["validator_task"]["deps_config"][0]["task"]
-group_id = str(config["validator_task"]["_group_id"])
-instance_id = config["validator_task"]["instance_id"]
-output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
+def handle_request(src, dest):
 
-src = "../"+dtv_task_id+"/secondary"
-if "SECONDARY_ARCHIVE" in os.environ:
-    dest = os.environ["SECONDARY_ARCHIVE"]
-else:
-    dest = "/tmp"
+    if "SECONDARY_ARCHIVE" in os.environ:
+        archive_path = os.environ["SECONDARY_ARCHIVE"]
+    else:
+        archive_path= "/tmp"
 
-dest+="/"+group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id
+    if not os.path.exists(src):
+        print(src+" doesn't exist")
+        sys.exit(1)
 
-if not os.path.exists(src):
-    print(src+" doesn't exist")
-    sys.exit(1)
+    os.makedirs(archive_path+"/"+dest, exist_ok=True)
 
-os.makedirs(dest, exist_ok=True)
+    print("src:%s dest:%s" % (src, archive_path+"/"+dest))
+    recursive_overwrite(src, archive_path+"/"+dest)
 
 def recursive_overwrite(src, dest, ignore=None):
     if os.path.isdir(src):
@@ -45,12 +41,34 @@ def recursive_overwrite(src, dest, ignore=None):
     else:
         shutil.copyfile(src, dest)
 
-#if os.path.exists(dest):
-#    print(dest+" already exists - removing first")
-#    shutil.rmtree(dest) 
-#
-print("src:%s dest:%s" % (src, dest))
-#shutil.copytree(src, dest+"/secondary")
-recursive_overwrite(src, dest+"/secondary")
+#deprecated by requests
+if "validator_task" in config:
+    dtv_task_id = config["validator_task"]["_id"]
+    follow_task_id = config["validator_task"]["deps_config"][0]["task"]
+    group_id = str(config["validator_task"]["_group_id"])
+    instance_id = config["validator_task"]["instance_id"]
+    output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
+
+    src = "../"+dtv_task_id+"/secondary"
+    dest=group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id+"/secondary"
+
+    handle_request(src, dest)
+
+if "requests" in config:
+    for request in config["requests"]:
+        src = request["src"]
+
+        dest = ""
+        dest += str(request["group_id"])
+        dest += "/"+request["instance_id"]
+        dest += "/"+request["task_id"]
+        dest += "/"+request["subdir"]
+
+        if "path" in request:
+            src += "/"+request["path"]
+            dest += "/"+request["path"]
+
+        handle_request(src, dest)
+
 
 

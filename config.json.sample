@@ -1,0 +1,12 @@
+{ 
+  "requests": [
+    {
+        "src" : "testdata",
+				"group_id" : 781,
+				"instance_id" : "5fd3903ccafc082df6ddaf2d",
+				"task_id" : "5fd3903dcafc082df6ddaf30",
+				"subdir" : "output",
+				"path" : "secondary"
+    }
+  ]
+}

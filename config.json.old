@@ -1,0 +1,175 @@
+{
+		"validator_task" : {
+			"_id-real" : "5fd39173cafc082df6ddaf33",
+			"_id" : "app-archive-secondary/testdata",
+			"gids" : [
+				1
+			],
+			"deps" : [ ],
+			"run" : 1,
+			"resource_ids" : [
+				"594c4d88cec9aa163acb9264"
+			],
+			"request_count" : 0,
+			"deps_config" : [
+				{
+					"subdirs" : [
+						"output"
+					],
+					"_id" : "5fd39173cafc082df6ddaf34",
+					"task" : "5fd3903dcafc082df6ddaf30"
+				}
+			],
+			"create_date" : "2020-12-11T15:34:11.264Z",
+			"name" : "Test App(v)",
+			"service" : "brainlife/validator-neuro-anat",
+			"service_branch" : "master",
+			"instance_id" : "5fd3903ccafc082df6ddaf2d",
+			"config" : {
+				"_app" : "5db3b9b858d9a55276c63233",
+				"_outputs" : [
+					{
+						"id" : "output",
+						"datatype" : "58c33bcee13a50849b25879a",
+						"desc" : "Test App",
+						"meta" : {
+							"subject" : "soichi",
+							"nifti_headers" : {
+								"sizeof_hdr" : 348,
+								"data_type" : "",
+								"db_name" : "",
+								"extents" : 0,
+								"session_error" : 0,
+								"regular" : "r",
+								"dim_info" : 0,
+								"dim" : [
+									3,
+									182,
+									218,
+									182,
+									1,
+									1,
+									1,
+									1
+								],
+								"intent_p1" : 0,
+								"intent_p2" : 0,
+								"intent_p3" : 0,
+								"intent_code" : 0,
+								"datatype" : 4,
+								"bitpix" : 16,
+								"slice_start" : 0,
+								"pixdim" : [
+									-1,
+									1,
+									1,
+									1,
+									2.299999952316284,
+									0,
+									0,
+									0
+								],
+								"vox_offset" : 0,
+								"scl_slope" : null,
+								"scl_inter" : null,
+								"slice_end" : 0,
+								"slice_code" : 0,
+								"xyzt_units" : 10,
+								"cal_max" : 0,
+								"cal_min" : 0,
+								"slice_duration" : 0,
+								"toffset" : 0,
+								"glmax" : 0,
+								"glmin" : 0,
+								"descrip" : "FSL5.0",
+								"aux_file" : "",
+								"qform_code" : 4,
+								"sform_code" : 4,
+								"quatern_b" : 0,
+								"quatern_c" : 1,
+								"quatern_d" : 0,
+								"qoffset_x" : 90,
+								"qoffset_y" : -126,
+								"qoffset_z" : -72,
+								"srow_x" : [
+									-1,
+									0,
+									0,
+									90
+								],
+								"srow_y" : [
+									0,
+									1,
+									0,
+									-126
+								],
+								"srow_z" : [
+									0,
+									0,
+									1,
+									-72
+								],
+								"intent_name" : "",
+								"magic" : "n+1",
+								"base_affine" : [
+									[
+										-1,
+										0,
+										0,
+										90.5
+									],
+									[
+										0,
+										1,
+										0,
+										-108.5
+									],
+									[
+										0,
+										0,
+										1,
+										-90.5
+									],
+									[
+										0,
+										0,
+										0,
+										1
+									]
+								]
+							},
+							"Space" : "MNI152NLin6Asym"
+						},
+						"subdir" : "output",
+						"datatype_tags" : [ ]
+					}
+				],
+				"t1" : "../5fd3903dcafc082df6ddaf30/output/t1.nii.gz"
+			},
+			"remove_date" : "2020-12-18T15:40:08.504Z",
+			"_group_id" : 781,
+			"status" : "finished",
+			"request_date" : "2020-12-11T15:40:08.528Z",
+			"status_msg" : "Successfully completed in 1.14 mins on hayashis@carbonate",
+			"user_id" : "1",
+			"follow_task_id" : "5fd3903dcafc082df6ddaf30",
+			"__v" : 3,
+			"max_runtime" : 604800000,
+			"_envs" : {
+				"SERVICE_DIR" : ".",
+				"TASK_ID" : "5fd39173cafc082df6ddaf33",
+				"USER_ID" : "1",
+				"SERVICE" : "brainlife/validator-neuro-anat",
+				"SERVICE_BRANCH" : "master"
+			},
+			"commit_id" : "838d19b3ebe01d50a4c1b6cb94b34ffe9f485f6f",
+			"fail_date" : "2020-12-11T15:34:50.030Z",
+			"next_date" : "2020-12-11T15:41:26.090Z",
+			"resource_id" : "594c4d88cec9aa163acb9264",
+			"start_date" : "2020-12-11T15:40:08.591Z",
+			"finish_date" : "2020-12-11T15:41:16.854Z",
+			"runtime" : 68263,
+			"_status_changed" : true
+		},
+		"app_task_id" : "5fd3903dcafc082df6ddaf30"
+}
