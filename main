@@ -57,12 +57,14 @@ if "validator_task" in config:
 if "requests" in config:
     for request in config["requests"]:
         src = request["src"]
+        src += "/secondary"
 
         dest = ""
         dest += str(request["group_id"])
         dest += "/"+request["instance_id"]
         dest += "/"+request["task_id"]
         dest += "/"+request["subdir"]
+        dest += "/secondary"
 
         #if "path" in request:
         #    src += "/"+request["path"]
