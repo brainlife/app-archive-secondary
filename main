@@ -10,6 +10,14 @@ with open("config.json") as config_json:
 
 def handle_request(src, dest):
 
+    # If src is an S3 URI (e.g. from a Batch task), remap to the local S3 mount path.
+    if src.startswith("s3://"):
+        s3_path = src.split("/", 3)[-1]  # strips "s3://bucket/"
+        s3fs_mount = os.environ.get("BRAINLIFE_ARCHIVE_s3fs", "/mnt/s3fs")
+        remapped = f"{s3fs_mount}/{s3_path}"
+        print(f"Remapping S3 URI to mount path: {src} -> {remapped}")
+        src = remapped
+
     if "SECONDARY_ARCHIVE" in os.environ:
         archive_path = os.environ["SECONDARY_ARCHIVE"]
     else:
