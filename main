@@ -18,6 +18,16 @@ def handle_request(src, dest):
         print(f"Remapping S3 URI to mount path: {src} -> {remapped}")
         src = remapped
 
+    elif src.startswith("../") and not os.path.exists(src):
+        parts = src[3:].split("/", 1)
+        task_id = parts[0]
+        rest = parts[1] if len(parts) > 1 else ""
+        s3fs_mount = os.environ.get("BRAINLIFE_ARCHIVE_s3fs", "/mnt/s3fs")
+        remapped = f"{s3fs_mount}/tasks/{task_id}/{rest}" if rest else f"{s3fs_mount}/tasks/{task_id}"
+        if os.path.exists(remapped):
+            print(f"Relative path not found locally, remapping to S3 mount: {src} -> {remapped}")
+            src = remapped
+
     if "SECONDARY_ARCHIVE" in os.environ:
         archive_path = os.environ["SECONDARY_ARCHIVE"]
     else:
