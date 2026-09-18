@@ -14,6 +14,15 @@ INLINE_ONLY_VALIDATORS = {
 }
 
 
+# This reviewed main script only copies the mask into output/ and writes
+# validation results. It never creates secondary files. Quartz does not upload
+# its task scripts/product to S3, so use the dispatcher-provided exact commit
+# and successful finish metadata instead of probing nonexistent S3 evidence.
+NO_SECONDARY_COMMITS = {
+    ('brainlife/validator-neuro-mask', 'b209f0b137fd564a335505ad6873d063fd0eaa38'),
+}
+
+
 def confirmed_empty(request, source):
     if not request.get('validator'):
         return False  # Never skip group-analysis data.
@@ -27,7 +36,10 @@ def confirmed_empty(request, source):
     listing = client.list_objects_v2(Bucket=bucket, Prefix=key.rstrip('/') + '/', MaxKeys=1)
     if listing.get('Contents'):
         return False
-    expected = INLINE_ONLY_VALIDATORS.get((request.get('app') or {}).get('service'))
+    app = request.get('app') or {}
+    if (app.get('service'), app.get('commit_id')) in NO_SECONDARY_COMMITS and request.get('finish_date'):
+        return True
+    expected = INLINE_ONLY_VALIDATORS.get(app.get('service'))
     if not expected:
         return False
     task_root = key.rstrip('/').rsplit('/', 1)[0] + '/'

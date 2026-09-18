@@ -58,3 +58,21 @@ class EmptyTests(unittest.TestCase):
                 self.assertFalse(empty.confirmed_empty(req,'secondary'))
                 self.assertFalse(empty.confirmed_empty(req,'missing'))
             finally: os.chdir(old)
+
+    def test_reviewed_quartz_mask_version_without_s3_task_files(self):
+        req = {'validator': True, 'finish_date': '2026-09-18T22:47:10.556Z',
+               'app': {'service': 'brainlife/validator-neuro-mask',
+                       'commit_id': 'b209f0b137fd564a335505ad6873d063fd0eaa38'}}
+        self.assertTrue(empty.confirmed_empty(req, self.source))
+        self.client.get_object.assert_not_called()
+        req.pop('finish_date')
+        self.assertFalse(empty.confirmed_empty(req, self.source))
+        req['finish_date'] = '2026-09-18T22:47:10.556Z'
+        req['app']['commit_id'] = 'unreviewed-version'
+        self.assertFalse(empty.confirmed_empty(req, self.source))
+        req['app']['commit_id'] = 'b209f0b137fd564a335505ad6873d063fd0eaa38'
+        self.client.list_objects_v2.return_value = {'Contents': [{'Key': 'secondary/x.png'}]}
+        self.assertFalse(empty.confirmed_empty(req, self.source))
+        self.client.list_objects_v2.side_effect = ClientError({'Error': {'Code': 'AccessDenied'}}, 'ListObjectsV2')
+        with self.assertRaises(ClientError):
+            empty.confirmed_empty(req, self.source)
