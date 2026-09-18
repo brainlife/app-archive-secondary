@@ -1,94 +1,17 @@
-#!/usr/bin/env python3
-
-import json
-import os
-import shutil
-import sys
-
-with open("config.json") as config_json:
-    config = json.load(config_json)
-
-def handle_request(src, dest):
-
-    # If src is an S3 URI (e.g. from a Batch task), remap to the local S3 mount path.
-    if src.startswith("s3://"):
-        s3_path = src.split("/", 3)[-1]  # strips "s3://bucket/"
-        s3fs_mount = os.environ.get("BRAINLIFE_ARCHIVE_s3fs", "/mnt/s3fs")
-        remapped = f"{s3fs_mount}/{s3_path}"
-        print(f"Remapping S3 URI to mount path: {src} -> {remapped}")
-        src = remapped
-
-    elif src.startswith("../") and not os.path.exists(src):
-        parts = src[3:].split("/", 1)
-        task_id = parts[0]
-        rest = parts[1] if len(parts) > 1 else ""
-        s3fs_mount = os.environ.get("BRAINLIFE_ARCHIVE_s3fs", "/mnt/s3fs")
-        remapped = f"{s3fs_mount}/tasks/{task_id}/{rest}" if rest else f"{s3fs_mount}/tasks/{task_id}"
-        if os.path.exists(remapped):
-            print(f"Relative path not found locally, remapping to S3 mount: {src} -> {remapped}")
-            src = remapped
-
-    if "SECONDARY_ARCHIVE" in os.environ:
-        archive_path = os.environ["SECONDARY_ARCHIVE"]
-    else:
-        archive_path= "/tmp"
-
-    if not os.path.exists(src):
-        print(src+" doesn't exist")
-        sys.exit(1)
-
-    os.makedirs(archive_path+"/"+dest, exist_ok=True)
-
-    print("src:%s dest:%s" % (src, archive_path+"/"+dest))
-    recursive_overwrite(src, archive_path+"/"+dest)
-
-def recursive_overwrite(src, dest, ignore=None):
-    if os.path.isdir(src):
-        if not os.path.isdir(dest):
-            os.makedirs(dest)
-        files = os.listdir(src)
-        if ignore is not None:
-            ignored = ignore(src, files)
-        else:
-            ignored = set()
-        for f in files:
-            if f not in ignored:
-                recursive_overwrite(os.path.join(src, f),
-                                    os.path.join(dest, f),
-                                    ignore)
-    else:
-        shutil.copyfile(src, dest)
-
-#deprecated by requests
-if "validator_task" in config:
-    dtv_task_id = config["validator_task"]["_id"]
-    follow_task_id = config["validator_task"]["deps_config"][0]["task"]
-    group_id = str(config["validator_task"]["_group_id"])
-    instance_id = config["validator_task"]["instance_id"]
-    output_id = config["validator_task"]["config"]["_outputs"][0]["id"]
-
-    src = "../"+dtv_task_id+"/secondary"
-    dest=group_id+"/"+instance_id+"/"+follow_task_id+"/"+output_id+"/secondary"
-
-    handle_request(src, dest)
-
-if "requests" in config:
-    for request in config["requests"]:
-        src = request["src"]
-        #src += "/secondary"
-
-        dest = ""
-        dest += str(request["group_id"])
-        dest += "/"+request["instance_id"]
-        dest += "/"+request["task_id"]
-        dest += "/"+request["subdir"]
-        #dest += "/secondary"
-
-        #if "path" in request:
-        #    src += "/"+request["path"]
-        #    dest += "/"+request["path"]
-
-        handle_request(src, dest)
-
-
-
+#!/bin/bash
+set -euo pipefail
+export PYTHONUNBUFFERED=1
+rm -f secondary-archive-result.json
+if [[ -z "${SECONDARY_ARCHIVE_S3_BUCKET:-}" ]]; then
+    exec python3 ./legacy_archive.py
+fi
+export BRAINLIFE_ARCHIVE_S3FS_BUCKET="${BRAINLIFE_ARCHIVE_S3FS_BUCKET:-$SECONDARY_ARCHIVE_S3_BUCKET}"
+# Keep staged sibling task directories visible inside the transfer container.
+binds=(--bind "$(dirname "$PWD")")
+source_mount="${BRAINLIFE_ARCHIVE_s3fs:-/mnt/s3fs}"
+if [[ -d "$source_mount" ]]; then
+    binds+=(--bind "$source_mount:$source_mount:ro")
+fi
+singularity exec "${binds[@]}" docker://brainlife/archive:s3fs-s5cmd-v1     env PYTHONPATH=/opt/archive-zarr-sdk python3 -S ./secondary_archive.py
+python3 ./finish_secondary.py
+echo "Secondary archive completed successfully"
