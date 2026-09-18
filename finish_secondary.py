@@ -22,6 +22,10 @@ def main():
                 result['groupanalysis_compatibility_copy'] = True
         results['complete'] = True
         result_path.write_text(json.dumps(results, indent=2) + '\n')
+        if results['requests'] and all(item.get('status') == 'empty' for item in results['requests']):
+            print('No secondary files were generated', flush=True)
+        else:
+            print('Secondary archive completed successfully', flush=True)
     except Exception:
         if result_path.exists():
             result_path.unlink()

@@ -14,4 +14,3 @@ if [[ -d "$source_mount" ]]; then
 fi
 singularity exec "${binds[@]}" docker://brainlife/archive:s3fs-s5cmd-v1     env PYTHONPATH=/opt/archive-zarr-sdk python3 -S ./secondary_archive.py
 python3 ./finish_secondary.py
-echo "Secondary archive completed successfully"

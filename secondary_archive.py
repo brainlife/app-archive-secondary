@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 
 from s3_transfer import archive_directory, safe_relative
+from empty_secondary import confirmed_empty
 
 
 def destination_path(request):
@@ -62,7 +63,15 @@ def main():
     results = []
     for request, destination in planned:
         prefix = root + '/' + destination + '/'
-        size = archive_directory(resolve_request_source(request['src']), bucket, prefix)
+        source = resolve_request_source(request['src'])
+        if confirmed_empty(request, source):
+            message = 'No secondary files were generated'
+            print(message, flush=True)
+            results.append({'bucket': bucket, 'prefix': prefix, 'size': 0,
+                            'status': 'empty', 'message': message,
+                            'groupanalysis_compatibility_copy': False})
+            continue
+        size = archive_directory(source, bucket, prefix)
         results.append({'bucket': bucket, 'prefix': prefix, 'size': size,
                         'groupanalysis_compatibility_copy': False})
     result_path.write_text(json.dumps({'requests': results}, indent=2) + '\n')
